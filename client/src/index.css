@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-val-bg text-val-cream font-display antialiased;
+    background-image:
+      radial-gradient(1200px 500px at 80% -10%, rgba(255, 70, 85, 0.08), transparent),
+      radial-gradient(900px 400px at -10% 110%, rgba(15, 216, 180, 0.05), transparent);
+    background-attachment: fixed;
+  }
+  ::selection {
+    @apply bg-val-red/80 text-white;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0f1923;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #24384a;
+    border-radius: 6px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #35506a;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply bg-val-panel border border-val-border;
+  }
+  .section-title {
+    @apply text-sm font-bold uppercase tracking-[0.2em] text-val-muted border-l-2 border-val-red pl-3;
+  }
+  /* Valorant-style sheared corner */
+  .clip-corner {
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+  }
+}
