@@ -1,0 +1,19 @@
+# Render Blueprint — deploys the Express API as a free web service.
+# In the Render dashboard: New + → Blueprint → select this repo → it reads
+# this file and prompts only for the secret (HENRIK_API_KEY).
+services:
+  - type: web
+    name: valtracker-api
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install --omit=dev
+    startCommand: node index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: '22'
+      - key: HENRIK_API_KEY
+        sync: false # secret — Render prompts for the value on first deploy
+      - key: CORS_ORIGIN
+        value: https://3939justinyi.github.io

@@ -12,6 +12,9 @@ import { getContent } from './utils/contentProvider.js';
 
 const app = express();
 app.disable('x-powered-by');
+// Behind a hosted proxy (Render/Railway) the client IP arrives in
+// X-Forwarded-For; without this, express-rate-limit refuses to start.
+app.set('trust proxy', 1);
 
 const corsOrigin = process.env.CORS_ORIGIN ?? '*';
 app.use(cors({ origin: corsOrigin === '*' ? true : corsOrigin.split(',') }));
