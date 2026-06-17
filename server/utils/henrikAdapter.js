@@ -65,8 +65,14 @@ export async function getMMR({ region, name, tag }) {
 }
 
 export async function getMatches({ region, name, tag, size, queue }) {
-  const params = { size: Math.min(size, 10) }; // henrik v3 caps page size at 10
-  if (queue && queue !== 'all') params.filter = queue;
+  const wantAll = !queue || queue === 'all';
+  // Always pull the max page (henrik v3 caps at 10) and filter by mode
+  // ourselves. The upstream mode filter is unreliable — it silently returns
+  // every mode — so without this, Deathmatch/Team Deathmatch leak in. Those
+  // modes report rounds_played=1, which makes ACS (combatScore / rounds)
+  // explode into the thousands.
+  const params = { size: 10 };
+  if (!wantAll) params.mode = queue; // best-effort upstream hint
 
   const [matchesRes, historyRes] = await Promise.all([
     henrikGet(`/valorant/v3/matches/${region}/${enc(name)}/${enc(tag)}`, params),
@@ -78,10 +84,15 @@ export async function getMatches({ region, name, tag, size, queue }) {
     (historyRes?.data ?? []).filter((h) => h?.match_id).map((h) => [h.match_id, h])
   );
 
-  return (matchesRes?.data ?? [])
+  let matches = (matchesRes?.data ?? [])
     .map((m) => normalizeMatch(m, { name, tag, region, rrByMatch }))
-    .filter(Boolean)
-    .slice(0, size);
+    .filter(Boolean);
+
+  if (!wantAll) {
+    const want = queue.toLowerCase();
+    matches = matches.filter((m) => String(m.queue).toLowerCase() === want);
+  }
+  return matches.slice(0, size);
 }
 
 export async function getMatchDetail({ region, matchId }) {
