@@ -13,10 +13,9 @@ services:
     envVars:
       - key: NODE_VERSION
         value: '22'
-      # Demo data until the HenrikDev Enhanced (public-use) key is approved —
-      # flip this to `henrik` in a commit when it lands.
+      # Live HenrikDev data — Enhanced (public-use) tier approved.
       - key: DATA_SOURCE
-        value: mock
+        value: henrik
       - key: HENRIK_API_KEY
         sync: false # secret — Render prompts for the value on first deploy
       - key: CORS_ORIGIN
