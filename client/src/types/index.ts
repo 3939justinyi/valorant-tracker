@@ -49,6 +49,7 @@ export interface MatchStats {
   legshots: number;
   hsPercent: number | null;
   firstBloods: number | null;
+  firstDeaths: number | null;
   kastRounds: number | null;
   kastPercent: number | null;
   clutchesWon: number | null;
@@ -122,6 +123,9 @@ export interface Aggregates {
   kastPercent: number | null;
   firstBloods: number | null;
   firstBloodsPerMatch: number | null;
+  firstDeaths: number | null;
+  entryRate: number | null;
+  entrySuccess: number | null;
   clutchesWon: number;
   clutchesAttempted: number;
   agents: AgentAggregate[];

@@ -29,6 +29,8 @@ export default function StatsPanel({ aggregates: agg, size, onSizeChange, compac
     { label: 'ADR', value: fmtInt(agg.adr), sub: 'dmg / round' },
     { label: 'KAST', value: fmtPct(agg.kastPercent) },
     { label: 'First Bloods', value: fmtNum(agg.firstBloodsPerMatch, 1), sub: 'per match' },
+    { label: 'Entry Rate', value: fmtPct(agg.entryRate), sub: 'opening duels / round' },
+    { label: 'Entry Success', value: fmtPct(agg.entrySuccess), sub: 'opening duels won' },
     {
       label: 'Clutches',
       value:

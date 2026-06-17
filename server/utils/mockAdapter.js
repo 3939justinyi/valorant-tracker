@@ -102,6 +102,7 @@ function generateCore(seedBase, index) {
   const bodyshots = Math.max(0, hits - headshots - legshots);
 
   const firstBloods = irange(rng, 0, Math.min(5, Math.ceil(kills / 5)));
+  const firstDeaths = irange(rng, 0, Math.min(5, Math.ceil(deaths / 5)));
   const kastRounds = Math.round(roundsPlayed * range(rng, 0.58, 0.86));
   const clutchesAttempted = irange(rng, 0, 3);
   const clutchesWon = clutchesAttempted === 0 ? 0 : irange(rng, 0, clutchesAttempted);
@@ -128,7 +129,7 @@ function generateCore(seedBase, index) {
     raw: {
       kills, deaths, assists, combatScore, totalDamage,
       headshots, bodyshots, legshots, roundsPlayed,
-      firstBloods, kastRounds,
+      firstBloods, firstDeaths, kastRounds,
       kastPercent: Math.round((kastRounds / roundsPlayed) * 1000) / 1000,
       clutchesWon, clutchesAttempted,
     },

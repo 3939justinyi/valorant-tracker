@@ -32,11 +32,12 @@ const round3 = (n) => Math.round(n * 1000) / 1000;
  */
 export function deriveRoundStats(rounds, { puuid, playerTeam, teammates, enemies }) {
   if (!rounds?.length) {
-    return { firstBloods: null, kastRounds: null, kastPercent: null, clutchesWon: null, clutchesAttempted: null };
+    return { firstBloods: null, firstDeaths: null, kastRounds: null, kastPercent: null, clutchesWon: null, clutchesAttempted: null };
   }
 
   const TRADE_WINDOW_MS = 5_000;
   let firstBloods = 0;
+  let firstDeaths = 0;
   let kastRounds = 0;
   let clutchesWon = 0;
   let clutchesAttempted = 0;
@@ -45,6 +46,10 @@ export function deriveRoundStats(rounds, { puuid, playerTeam, teammates, enemies
     const kills = [...(round.kills ?? [])].sort((a, b) => a.timeMs - b.timeMs);
 
     if (kills.length && kills[0].killer === puuid) firstBloods += 1;
+    // First death: the player was the victim of the round's opening kill. FK and
+    // FD are mutually exclusive within a round (the first kill's victim IS the
+    // first death), so (FK + FD) counts each round at most once — no double-count.
+    if (kills.length && kills[0].victim === puuid) firstDeaths += 1;
 
     // KAST: Kill, Assist, Survived, or Traded
     const gotKill = kills.some((k) => k.killer === puuid);
@@ -86,6 +91,7 @@ export function deriveRoundStats(rounds, { puuid, playerTeam, teammates, enemies
 
   return {
     firstBloods,
+    firstDeaths,
     kastRounds,
     kastPercent: round3(kastRounds / rounds.length),
     clutchesWon,
@@ -111,6 +117,7 @@ export function buildMatchStats(raw) {
     legshots,
     hsPercent: roundOrNull3(hsPercent(headshots, bodyshots, legshots)),
     firstBloods: raw.firstBloods ?? null,
+    firstDeaths: raw.firstDeaths ?? null,
     kastRounds: raw.kastRounds ?? null,
     kastPercent: raw.kastPercent ?? null,
     clutchesWon: raw.clutchesWon ?? null,
@@ -139,6 +146,9 @@ export function aggregateMatches(matches) {
     kastPercent: null,
     firstBloods: null,
     firstBloodsPerMatch: null,
+    firstDeaths: null,
+    entryRate: null,
+    entrySuccess: null,
     clutchesWon: 0,
     clutchesAttempted: 0,
     agents: [],
@@ -157,6 +167,8 @@ export function aggregateMatches(matches) {
   let kastEligibleRounds = 0;
   let fbTotal = 0;
   let fbMatches = 0;
+  let fdTotal = 0;
+  let entryRounds = 0;
 
   const byAgent = new Map();
   const byMap = new Map();
@@ -183,6 +195,10 @@ export function aggregateMatches(matches) {
     if (s.firstBloods != null) {
       fbTotal += s.firstBloods;
       fbMatches += 1;
+      // First-blood and first-death data always come together (same source),
+      // so accumulating both here keeps the entry FK/FD totals over identical rounds.
+      fdTotal += s.firstDeaths ?? 0;
+      entryRounds += m.roundsPlayed;
     }
     agg.clutchesWon += s.clutchesWon ?? 0;
     agg.clutchesAttempted += s.clutchesAttempted ?? 0;
@@ -200,6 +216,12 @@ export function aggregateMatches(matches) {
   agg.kastPercent = kastEligibleRounds > 0 ? round3(kastRounds / kastEligibleRounds) : null;
   agg.firstBloods = fbMatches > 0 ? fbTotal : null;
   agg.firstBloodsPerMatch = fbMatches > 0 ? round2(fbTotal / fbMatches) : null;
+  agg.firstDeaths = fbMatches > 0 ? fdTotal : null;
+  // Entry rate = share of rounds where the player took the opening duel (as the
+  // first killer or first victim). Entry success = how often they won that duel.
+  const entryDuels = fbTotal + fdTotal;
+  agg.entryRate = entryRounds > 0 ? round3(entryDuels / entryRounds) : null;
+  agg.entrySuccess = entryDuels > 0 ? round3(fbTotal / entryDuels) : null;
 
   agg.agents = [...byAgent.values()].map(finishGroup).sort((a, b) => b.matches - a.matches);
   agg.maps = [...byMap.values()].map(finishGroup).sort((a, b) => b.matches - a.matches);

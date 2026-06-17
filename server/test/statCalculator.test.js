@@ -68,6 +68,7 @@ test('deriveRoundStats: first blood, KAST and clutch detection', () => {
 
   const s = deriveRoundStats(rounds, ctx);
   assert.equal(s.firstBloods, 1);
+  assert.equal(s.firstDeaths, 2); // R2 and R3: player is the round's first victim
   assert.equal(s.kastRounds, 3); // R1, R3, R4
   assert.equal(s.kastPercent, 0.75);
   assert.equal(s.clutchesAttempted, 1);
@@ -84,7 +85,7 @@ function fakeMatch(overrides = {}) {
   const raw = {
     kills: 20, deaths: 10, assists: 5, combatScore: 5000, totalDamage: 3000,
     headshots: 20, bodyshots: 70, legshots: 10, roundsPlayed: 20,
-    firstBloods: 2, kastRounds: 15, kastPercent: 0.75, clutchesWon: 1, clutchesAttempted: 2,
+    firstBloods: 2, firstDeaths: 1, kastRounds: 15, kastPercent: 0.75, clutchesWon: 1, clutchesAttempted: 2,
   };
   return {
     matchId: overrides.matchId ?? 'm1',
@@ -118,6 +119,9 @@ test('aggregateMatches computes round-weighted aggregates and groupings', () => 
   assert.equal(agg.hsPercent, 0.2);
   assert.equal(agg.kastPercent, 0.75);
   assert.equal(agg.firstBloodsPerMatch, 2);
+  assert.equal(agg.firstDeaths, 3); // 1 FD × 3 matches
+  assert.equal(agg.entryRate, 0.15); // (6 FK + 3 FD) / 60 rounds
+  assert.equal(agg.entrySuccess, 0.667); // 6 FK / 9 opening duels
   assert.equal(agg.clutchesWon, 3);
   assert.equal(agg.clutchesAttempted, 6);
 
